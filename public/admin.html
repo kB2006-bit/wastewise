@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Operator Console - WasteWise</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <a href="/" class="brand">
+        <span class="brand-icon">WW</span>
+        <div>
+          <span class="brand-title">WasteWise</span>
+          <span class="brand-subtitle">Municipal Operations & Dispatch Console</span>
+        </div>
+      </a>
+      <nav class="nav-links">
+        <a href="/" class="nav-link">Schedule Pickup</a>
+        <a href="/track" class="nav-link">Track Request</a>
+        <a href="/admin" class="nav-link active">Operator Console</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" style="max-width:1200px;">
+    <!-- Authentication Header Bar -->
+    <div class="card" style="padding:1rem; margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+      <div style="display:flex; align-items:center; gap:0.5rem;">
+        <span style="font-weight:700; font-size:0.9rem;">Operator Access:</span>
+        <input type="password" id="admin-key-input" class="form-control" placeholder="Enter ADMIN_KEY" style="width:220px; padding:0.4rem 0.6rem; font-size:0.875rem;">
+        <button type="button" id="save-key-btn" class="btn btn-primary btn-sm">Authenticate</button>
+      </div>
+      <div id="auth-status-indicator" style="font-size:0.85rem; font-weight:600; color:var(--color-text-muted);">
+        Status: Not Authenticated
+      </div>
+    </div>
+
+    <div id="admin-error" class="callout callout-danger" style="display:none;"></div>
+
+    <!-- Real-time Database KPI Summary Ribbon -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div id="stat-active" class="stat-value">-</div>
+        <div class="stat-label">Active Queue</div>
+      </div>
+      <div class="stat-card">
+        <div id="stat-ready" class="stat-value" style="color:var(--color-brand);">-</div>
+        <div class="stat-label">Ready (Slotted)</div>
+      </div>
+      <div class="stat-card">
+        <div id="stat-scheduled" class="stat-value" style="color:var(--color-warning);">-</div>
+        <div class="stat-label">Scheduled Run</div>
+      </div>
+      <div class="stat-card">
+        <div id="stat-collected" class="stat-value" style="color:var(--color-success);">-</div>
+        <div class="stat-label">Collected</div>
+      </div>
+      <div class="stat-card">
+        <div id="stat-unsuccessful" class="stat-value" style="color:var(--color-danger);">-</div>
+        <div class="stat-label">Unsuccessful</div>
+      </div>
+    </div>
+
+    <!-- Filters Bar -->
+    <div class="filters-bar">
+      <span style="font-weight:700; font-size:0.85rem; color:var(--color-text-secondary); text-transform:uppercase;">Filter By:</span>
+      <select id="filter-status" class="form-control" style="width:170px; padding:0.4rem 0.6rem; font-size:0.85rem;">
+        <option value="">All Statuses</option>
+        <option value="SUBMITTED">SUBMITTED</option>
+        <option value="READY">READY</option>
+        <option value="SCHEDULED">SCHEDULED</option>
+        <option value="COLLECTED">COLLECTED</option>
+        <option value="UNSUCCESSFUL">UNSUCCESSFUL</option>
+      </select>
+
+      <select id="filter-zone" class="form-control" style="width:200px; padding:0.4rem 0.6rem; font-size:0.85rem;">
+        <option value="">All Service Zones</option>
+      </select>
+
+      <select id="filter-category" class="form-control" style="width:200px; padding:0.4rem 0.6rem; font-size:0.85rem;">
+        <option value="">All Waste Categories</option>
+      </select>
+
+      <button type="button" id="refresh-btn" class="btn btn-secondary btn-sm" style="margin-left:auto;">
+        Refresh Queue
+      </button>
+    </div>
+
+    <!-- Requests Dispatch Table -->
+    <div class="card" style="padding:0; overflow:hidden;">
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Tracking Code</th>
+              <th>Category & Description</th>
+              <th>Zone & Window</th>
+              <th>Curbside Address & Access Notes</th>
+              <th>Readiness State</th>
+              <th>Status</th>
+              <th style="text-align:right;">Dispatcher Actions</th>
+            </tr>
+          </thead>
+          <tbody id="requests-tbody">
+            <tr>
+              <td colspan="7" style="text-align:center; padding:2rem; color:var(--color-text-muted);">
+                Authenticate with x-admin-key to load the operational dispatch queue.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Unsuccessful Stop / Exception Modal -->
+  <div id="exception-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Record Curbside Exception</h3>
+        <button type="button" id="modal-close-btn" class="modal-close">&times;</button>
+      </div>
+
+      <div style="font-size:0.875rem; color:var(--color-text-secondary); margin-bottom:1rem;">
+        Log why this collection could not proceed. The resident tracking portal will immediately receive the corresponding remediation instructions.
+      </div>
+
+      <form id="exception-form">
+        <input type="hidden" id="modal-request-id">
+
+        <div class="form-group">
+          <label class="form-label" for="reason-code-select">Exception Reason Code <span style="color:var(--color-danger)">*</span></label>
+          <select id="reason-code-select" class="form-control" required>
+            <option value="">-- Select Structured Reason --</option>
+            <option value="INACCESSIBLE">INACCESSIBLE (Locked gate, blocked driveway, safe access denied)</option>
+            <option value="NOT_PRESENT">NOT_PRESENT (Item not placed at curb / declared location)</option>
+            <option value="PREP_INCOMPLETE">PREP_INCOMPLETE (Missing prep checklist, untaped hazards, fluids present)</option>
+            <option value="INCORRECT_CATEGORY">INCORRECT_CATEGORY (Item does not match declaration / prohibited material)</option>
+            <option value="CAPACITY_UNAVAILABLE">CAPACITY_UNAVAILABLE (Vehicle payload filled early on corridor)</option>
+            <option value="OTHER">OTHER (Special operational exception)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="operator-note-input">Driver / Dispatcher Internal Notes</label>
+          <textarea id="operator-note-input" class="form-control" placeholder="Specific notes on obstacle, vehicle obstruction, or safety issue..." maxlength="500"></textarea>
+        </div>
+
+        <!-- Live Resolution Preview Box -->
+        <div id="resolution-preview-box" class="callout callout-info" style="display:none; font-size:0.85rem;">
+          <strong>Resident Resolution Message:</strong>
+          <div id="resolution-preview-text" style="margin-top:0.25rem;"></div>
+        </div>
+
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1.5rem;">
+          <button type="button" id="modal-cancel-btn" class="btn btn-secondary">Cancel</button>
+          <button type="submit" id="modal-submit-btn" class="btn btn-danger">Confirm Exception & Abort Stop</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="app-footer">
+    <div style="max-width:1100px; margin:0 auto;">
+      WasteWise Municipal Readiness & Dispatch Platform &bull; Zero-Friction Municipal Logistics
+    </div>
+  </footer>
+
+  <script src="/js/admin.js"></script>
+</body>
+</html>

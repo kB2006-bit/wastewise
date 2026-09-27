@@ -1,0 +1,24 @@
+{
+  "name": "wastewise",
+  "version": "1.0.0",
+  "description": "WasteWise - Collection Readiness & Dispatch Platform",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test tests/**/*.test.js"
+  },
+  "keywords": [
+    "waste-management",
+    "recycling",
+    "collection-readiness",
+    "dispatch",
+    "municipal"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}

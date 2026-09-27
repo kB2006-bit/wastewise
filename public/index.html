@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WasteWise - Collection Readiness & Dispatch</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <a href="/" class="brand">
+        <span class="brand-icon">WW</span>
+        <div>
+          <span class="brand-title">WasteWise</span>
+          <span class="brand-subtitle">Municipal Collection Readiness Engine</span>
+        </div>
+      </a>
+      <nav class="nav-links">
+        <a href="/" class="nav-link active">Schedule Pickup</a>
+        <a href="/track" class="nav-link">Track Request</a>
+        <a href="/admin" class="nav-link">Operator Console</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="page-title-section">
+      <h1 class="page-title">Request Special Waste Collection</h1>
+      <p class="page-description">
+        Ensure your bulky, electronic, or recyclable materials are collection-ready before scheduling. 
+        Requests with confirmed preparation are guaranteed verified dispatch slots.
+      </p>
+    </div>
+
+    <!-- Booking Form Card -->
+    <div id="booking-section" class="card">
+      <form id="pickup-form">
+        <!-- Step 1: Category Selection -->
+        <div class="form-group">
+          <label class="form-label">1. Select Waste Category <span style="color:var(--color-danger)">*</span></label>
+          <div id="category-container" class="category-grid">
+            <div style="color:var(--color-text-muted); font-size:0.9rem;">Loading collection categories...</div>
+          </div>
+          <input type="hidden" id="selected-category-id" required>
+        </div>
+
+        <!-- Step 2: Item Description & Quantity -->
+        <div class="form-group" style="display:grid; grid-template-columns: 3fr 1fr; gap: 1rem;">
+          <div>
+            <label class="form-label" for="item-description">2. Item Description <span style="color:var(--color-danger)">*</span></label>
+            <input type="text" id="item-description" class="form-control" placeholder="e.g. 2 Dell monitors, 1 UPS battery" minlength="3" maxlength="200" required>
+            <div class="form-hint">Briefly specify the physical items for pickup.</div>
+          </div>
+          <div>
+            <label class="form-label" for="item-quantity">Quantity</label>
+            <input type="number" id="item-quantity" class="form-control" value="1" min="1" max="50" required>
+          </div>
+        </div>
+
+        <!-- Step 3: Collection Readiness Checklist (Dynamic) -->
+        <div id="prep-section" class="form-group" style="display:none;">
+          <label class="form-label">3. Collection Readiness & Safety Requirements <span style="color:var(--color-danger)">*</span></label>
+          <div class="callout callout-warning" style="margin-bottom:0.75rem;">
+            <strong>Mandatory Compliance:</strong> Non-compliant items cannot be legally loaded by collection crews and will result in curbside rejection.
+          </div>
+          <div id="prep-rules-container" class="prep-checklist"></div>
+          
+          <div class="prep-confirm-box">
+            <input type="checkbox" id="prep-confirm-check" required>
+            <label for="prep-confirm-check" class="prep-confirm-label">
+              I certify that all required preparation steps have been completed and the item is safe for curbside retrieval.
+            </label>
+          </div>
+        </div>
+
+        <!-- Step 4: Curbside Address & Access Instructions -->
+        <div class="form-group">
+          <label class="form-label" for="address">4. Curbside Collection Address <span style="color:var(--color-danger)">*</span></label>
+          <input type="text" id="address" class="form-control" placeholder="Street address (e.g. 742 Evergreen Terrace)" minlength="5" maxlength="250" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="access-notes">Access Instructions for Driver (Optional)</label>
+          <input type="text" id="access-notes" class="form-control" placeholder="e.g. Beside garage door, driveway gate unlocked, beware of dog behind fence" maxlength="500">
+          <div class="form-hint">Provide clear instructions if the placement is not immediately obvious from the street.</div>
+        </div>
+
+        <!-- Step 5: Zone & Collection Corridor Selection -->
+        <div class="form-group" style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div>
+            <label class="form-label" for="zone-select">5. Operational Zone <span style="color:var(--color-danger)">*</span></label>
+            <select id="zone-select" class="form-control" required>
+              <option value="">-- Select Service Zone --</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label" for="window-select">6. Feasible Collection Window <span style="color:var(--color-danger)">*</span></label>
+            <select id="window-select" class="form-control" required disabled>
+              <option value="">-- First Select Zone --</option>
+            </select>
+            <div id="capacity-indicator" class="form-hint"></div>
+          </div>
+        </div>
+
+        <div id="form-error" class="callout callout-danger" style="display:none; margin-top:1rem;"></div>
+
+        <!-- Submit Button -->
+        <div style="margin-top: 1.5rem; display:flex; justify-content:flex-end;">
+          <button type="submit" id="submit-btn" class="btn btn-primary" style="padding:0.75rem 1.75rem; font-size:1rem;">
+            Submit Collection Request
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Step 6: Confirmation Screen (Hidden Initially) -->
+    <div id="confirmation-section" class="card" style="display:none;">
+      <div class="callout callout-success" style="margin-bottom:1.5rem;">
+        <h2 style="font-size:1.25rem; font-weight:700; margin-bottom:0.25rem;">Collection Request Confirmed & Slotted</h2>
+        <p>Your request has verified collection-readiness status and is assigned to the sector dispatch queue.</p>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; margin-bottom:1.5rem;">
+        <div style="background-color:#f8fafc; border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:1.25rem;">
+          <div style="font-size:0.8rem; text-transform:uppercase; color:var(--color-text-muted); font-weight:700;">Private Tracking Code</div>
+          <div id="confirm-tracking-code" style="font-size:1.6rem; font-weight:800; color:var(--color-brand); font-family:monospace; margin:0.35rem 0;"></div>
+          <p style="font-size:0.85rem; color:var(--color-text-secondary);">Save this code to check real-time collection status and driver notes.</p>
+          <div style="margin-top:1rem;">
+            <a id="track-link-btn" href="#" class="btn btn-primary btn-sm">Track Request Status</a>
+          </div>
+        </div>
+
+        <div style="background-color:#f8fafc; border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:1.25rem;">
+          <div style="font-size:0.8rem; text-transform:uppercase; color:var(--color-text-muted); font-weight:700;">Scheduled Window</div>
+          <div id="confirm-window" style="font-size:1.15rem; font-weight:700; color:var(--color-text-primary); margin:0.35rem 0;"></div>
+          <div id="confirm-zone" style="font-size:0.85rem; color:var(--color-text-secondary);"></div>
+          <div style="margin-top:0.75rem;">
+            <span id="confirm-status-badge" class="badge badge-READY">READY FOR DISPATCH</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="prep-checklist" style="margin-bottom:1.5rem;">
+        <h3 style="font-size:0.95rem; font-weight:700; margin-bottom:0.5rem;">Curbside Preparation Reminder</h3>
+        <ul id="confirm-prep-reminder" style="padding-left:1.25rem; font-size:0.875rem; color:var(--color-text-secondary);"></ul>
+      </div>
+
+      <button type="button" id="new-request-btn" class="btn btn-secondary">Submit Another Request</button>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <div style="max-width:1100px; margin:0 auto;">
+      WasteWise Municipal Readiness & Dispatch Platform &bull; Zero-Friction Municipal Logistics
+    </div>
+  </footer>
+
+  <script src="/js/resident.js"></script>
+</body>
+</html>
