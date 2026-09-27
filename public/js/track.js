@@ -56,7 +56,10 @@ document.addEventListener('DOMContentLoaded', () => {
     resultsCard.style.display = 'none';
     exceptionCallout.style.display = 'none';
     trackBtn.disabled = true;
-    trackBtn.textContent = 'Searching...';
+    trackBtn.innerHTML = `
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="spin" style="animation:spin 1s linear infinite; margin-right:0.35rem;" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle><path d="M12 2a10 10 0 0 1 10 10" stroke-opacity="1"></path></svg>
+      Searching...
+    `;
 
     fetch(`/api/track/${encodeURIComponent(code)}`)
       .then(async (res) => {
@@ -70,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
         resultsCard.style.display = 'block';
 
         resTrackingCode.textContent = data.tracking_code;
-        resCreatedDate.textContent = `Submitted: ${new Date(data.created_at).toLocaleString()}`;
+        resCreatedDate.textContent = `Intake Registered: ${new Date(data.created_at).toLocaleString()}`;
 
         // Status Badge
         resStatusBadge.className = `badge badge-${data.status}`;
@@ -90,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
           resPrepRules.appendChild(li);
         });
 
-        // Update Timeline Progression
+        // Update Timeline Progression with checkmarks and active states
         updateTimeline(data.status);
 
         // Exception Handling if UNSUCCESSFUL
@@ -110,34 +113,62 @@ document.addEventListener('DOMContentLoaded', () => {
       })
       .finally(() => {
         trackBtn.disabled = false;
-        trackBtn.textContent = 'Track';
+        trackBtn.innerHTML = `
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-right:0.2rem;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          Track Pickup
+        `;
       });
   }
 
   function updateTimeline(status) {
-    // Reset all steps
-    [step1, step2, step3, step4].forEach(s => {
-      s.className = 'timeline-step';
+    const steps = [
+      { el: step1, num: '1' },
+      { el: step2, num: '2' },
+      { el: step3, num: '3' },
+      { el: step4, num: '4' }
+    ];
+
+    // Reset all
+    steps.forEach(s => {
+      s.el.className = 'timeline-step';
+      const node = s.el.querySelector('.timeline-node');
+      if (node) node.textContent = s.num;
     });
 
+    const setCompleted = (step) => {
+      step.el.className = 'timeline-step completed';
+      const node = step.el.querySelector('.timeline-node');
+      if (node) node.innerHTML = '&#10003;';
+    };
+
+    const setActive = (step) => {
+      step.el.className = 'timeline-step active';
+    };
+
+    const setFailed = (step) => {
+      step.el.className = 'timeline-step failed';
+      const node = step.el.querySelector('.timeline-node');
+      if (node) node.innerHTML = '&#10007;';
+    };
+
     if (status === 'SUBMITTED') {
-      step1.className = 'timeline-step active';
+      setActive(steps[0]);
     } else if (status === 'READY') {
-      step1.className = 'timeline-step completed';
-      step2.className = 'timeline-step active';
+      setCompleted(steps[0]);
+      setActive(steps[1]);
     } else if (status === 'SCHEDULED') {
-      step1.className = 'timeline-step completed';
-      step2.className = 'timeline-step completed';
-      step3.className = 'timeline-step active';
+      setCompleted(steps[0]);
+      setCompleted(steps[1]);
+      setActive(steps[2]);
     } else if (status === 'COLLECTED') {
-      step1.className = 'timeline-step completed';
-      step2.className = 'timeline-step completed';
-      step3.className = 'timeline-step completed';
-      step4.className = 'timeline-step completed';
+      setCompleted(steps[0]);
+      setCompleted(steps[1]);
+      setCompleted(steps[2]);
+      setCompleted(steps[3]);
     } else if (status === 'UNSUCCESSFUL') {
-      step1.className = 'timeline-step completed';
-      step2.className = 'timeline-step completed';
-      step3.className = 'timeline-step failed';
+      setCompleted(steps[0]);
+      setCompleted(steps[1]);
+      setFailed(steps[2]);
     }
   }
 

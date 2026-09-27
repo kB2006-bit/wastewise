@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const gaugeAddress = document.getElementById('gauge-address');
   const gaugeWindow = document.getElementById('gauge-window');
 
-  // Coherent Category SVG Icons
+  // Category Icon SVGs
   const CATEGORY_ICONS = {
     'cat-ewaste': `
       <svg viewBox="0 0 24 24">
@@ -69,6 +69,13 @@ document.addEventListener('DOMContentLoaded', () => {
     </svg>
   `;
 
+  const CATEGORY_TAGS = {
+    'cat-bulky': 'Heavy & Furnishings',
+    'cat-ewaste': 'Hazardous Components',
+    'cat-recyclable': 'Dry Commodities',
+    'cat-organic': 'Yard & Garden'
+  };
+
   // 1. Fetch Categories
   fetch('/api/categories')
     .then(res => res.json())
@@ -78,17 +85,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
       categories.forEach(cat => {
         const iconSvg = CATEGORY_ICONS[cat.id] || DEFAULT_ICON;
+        const tagText = CATEGORY_TAGS[cat.id] || 'Eligible Waste';
+
         const card = document.createElement('div');
-        card.className = 'category-card';
+        card.className = `category-card category-${cat.id}`;
         card.dataset.id = cat.id;
         card.setAttribute('tabindex', '0');
         card.setAttribute('role', 'radio');
         card.setAttribute('aria-checked', 'false');
         card.innerHTML = `
-          <div class="category-icon-box" aria-hidden="true">${iconSvg}</div>
-          <div>
+          <div class="category-card-top">
+            <div class="category-icon-box" aria-hidden="true">${iconSvg}</div>
+            <span class="category-tag">${tagText}</span>
+          </div>
+          <div class="category-card-body">
             <div class="category-name">${escapeHtml(cat.name)}</div>
             <div class="category-desc">${escapeHtml(cat.description || '')}</div>
+          </div>
+          <div class="category-card-footer">
+            <span class="category-select-label">Select Category</span>
+            <span class="category-check-icon">✓</span>
           </div>
         `;
 
@@ -169,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!zoneId) {
       windowSlotContainer.innerHTML = `
-        <div style="color:var(--color-slate-500); font-size:0.875rem; grid-column:1/-1;">
+        <div style="color:var(--color-slate-500); font-size:0.875rem; grid-column:1/-1; padding:1.25rem; text-align:center; background:var(--color-slate-50); border:1px dashed var(--color-slate-300); border-radius:var(--radius-sm);">
           Please select a service zone above to view available scheduling windows.
         </div>
       `;
@@ -178,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     windowSlotContainer.innerHTML = `
-      <div style="color:var(--color-slate-500); font-size:0.875rem; grid-column:1/-1;">
+      <div style="color:var(--color-slate-500); font-size:0.875rem; grid-column:1/-1; padding:1.25rem; text-align:center;">
         Loading available sector corridor windows...
       </div>
     `;
@@ -191,22 +207,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (windows.length === 0) {
           windowSlotContainer.innerHTML = `
-            <div style="color:var(--color-slate-500); font-size:0.875rem; grid-column:1/-1;">
-              No collection windows currently active for this sector.
+            <div style="color:var(--color-slate-500); font-size:0.875rem; grid-column:1/-1; padding:1.25rem; text-align:center; background:var(--color-slate-50); border:1px dashed var(--color-slate-300); border-radius:var(--radius-sm);">
+              No collection windows currently active for this sector corridor.
             </div>
           `;
           return;
         }
 
         windows.forEach(win => {
-          // Keep hidden select in sync
           const opt = document.createElement('option');
           opt.value = win.id;
           opt.textContent = `${formatDate(win.collection_date)} (${win.start_time} - ${win.end_time})`;
           if (win.available_slots <= 0) opt.disabled = true;
           windowSelect.appendChild(opt);
 
-          // Render interactive card tile
           const isAvailable = win.available_slots > 0;
           const card = document.createElement('div');
           card.className = `window-slot-card ${isAvailable ? '' : 'disabled'}`;
@@ -215,14 +229,26 @@ document.addEventListener('DOMContentLoaded', () => {
           card.setAttribute('role', 'radio');
           card.setAttribute('aria-checked', 'false');
 
+          const dParts = parseDateParts(win.collection_date);
+
           const pillHtml = isAvailable
             ? `<span class="slot-capacity-pill pill-open">${win.available_slots} slot${win.available_slots > 1 ? 's' : ''} available</span>`
             : `<span class="slot-capacity-pill pill-full">Capacity Full</span>`;
 
           card.innerHTML = `
-            <div class="slot-date">${formatDate(win.collection_date)}</div>
-            <div class="slot-time">${win.start_time} – ${win.end_time}</div>
-            ${pillHtml}
+            <div class="slot-card-header">
+              <span class="slot-day-badge">${dParts.weekday}</span>
+              ${pillHtml}
+            </div>
+            <div class="slot-date-large">${dParts.monthDay}</div>
+            <div class="slot-time-row">
+              <span class="slot-time-icon" aria-hidden="true">🕒</span>
+              <span>${win.start_time} – ${win.end_time}</span>
+            </div>
+            <div class="slot-select-indicator">
+              <span>Select Corridor</span>
+              <span class="slot-check-icon">✓</span>
+            </div>
           `;
 
           if (isAvailable) {
@@ -276,14 +302,32 @@ document.addEventListener('DOMContentLoaded', () => {
     setGaugeState(gaugeAddress, hasAddress);
     setGaugeState(gaugeWindow, hasWindow);
 
-    // If all verified, change status banner to READY
-    const isAllReady = hasCategory && hasItem && hasPrep && hasAddress && hasWindow;
+    // Calculate count out of 5
+    const count = [hasCategory, hasItem, hasPrep, hasAddress, hasWindow].filter(Boolean).length;
+    const countText = document.getElementById('readiness-count-text');
+    const ringCircle = document.getElementById('readiness-ring-circle');
+    const summaryLine = document.getElementById('readiness-summary-line');
+
+    if (countText) countText.textContent = `${count}/5`;
+    if (ringCircle) {
+      const circumference = 213.6;
+      ringCircle.style.strokeDashoffset = (circumference * (1 - count / 5)).toFixed(1);
+      ringCircle.style.stroke = count === 5 ? 'var(--color-brand)' : 'var(--color-slate-400)';
+    }
+
+    // Step progress bar on main flow
+    updateProgressBar(hasCategory, hasItem, hasPrep, hasAddress, hasWindow);
+
+    const isAllReady = count === 5;
     if (isAllReady) {
       readinessBanner.className = 'readiness-status-banner status-ready';
       readinessBannerText.textContent = 'READY FOR DISPATCH';
+      if (summaryLine) summaryLine.textContent = 'All requirements verified for route dispatch';
     } else {
       readinessBanner.className = 'readiness-status-banner status-incomplete';
       readinessBannerText.textContent = 'Awaiting Requirements';
+      const remaining = 5 - count;
+      if (summaryLine) summaryLine.textContent = `${remaining} required verification${remaining > 1 ? 's' : ''} pending`;
     }
   }
 
@@ -291,6 +335,21 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!el) return;
     el.classList.toggle('verified', isDone);
     el.classList.toggle('unverified', !isDone);
+  }
+
+  function updateProgressBar(c1, c2, c3, c4, c5) {
+    setProgStep('prog-step-1', c1, true);
+    setProgStep('prog-step-2', c2, c1);
+    setProgStep('prog-step-3', c3, c1 && c2);
+    setProgStep('prog-step-4', c4, c1 && c2 && c3);
+    setProgStep('prog-step-5', c5, c1 && c2 && c3 && c4);
+  }
+
+  function setProgStep(id, isDone, isActive) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle('completed', isDone);
+    el.classList.toggle('active', isActive && !isDone);
   }
 
   // 6. Submit Pickup Request
@@ -309,12 +368,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const prepConfirmed = prepCheck.checked;
 
     if (!categoryId) {
-      showError('Please select a waste category.');
+      showError('Please select an eligible waste category.');
       return;
     }
 
     if (!windowId) {
-      showError('Please select an available collection window.');
+      showError('Please select an available collection corridor window.');
       return;
     }
 
@@ -366,7 +425,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         trackLinkBtn.href = `/track?code=${encodeURIComponent(data.tracking_code)}`;
 
-        // Setup Copy Code Button
         copyCodeBtn.onclick = () => {
           navigator.clipboard.writeText(data.tracking_code).then(() => {
             copyCodeBtn.textContent = 'Copied!';
@@ -392,7 +450,7 @@ document.addEventListener('DOMContentLoaded', () => {
     prepSection.style.display = 'none';
     windowSelect.innerHTML = '<option value="">-- Select Window --</option>';
     windowSlotContainer.innerHTML = `
-      <div style="color:var(--color-slate-500); font-size:0.875rem; grid-column:1/-1;">
+      <div style="color:var(--color-slate-500); font-size:0.875rem; grid-column:1/-1; padding:1.25rem; text-align:center; background:var(--color-slate-50); border:1px dashed var(--color-slate-300); border-radius:var(--radius-sm);">
         Please select a service zone above to view available scheduling windows.
       </div>
     `;
@@ -422,6 +480,20 @@ document.addEventListener('DOMContentLoaded', () => {
       return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
     } catch {
       return dStr;
+    }
+  }
+
+  function parseDateParts(dStr) {
+    if (!dStr) return { weekday: 'Slot', monthDay: '' };
+    try {
+      const parts = dStr.split('-');
+      const d = new Date(parts[0], parts[1] - 1, parts[2]);
+      return {
+        weekday: d.toLocaleDateString(undefined, { weekday: 'short' }),
+        monthDay: d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+      };
+    } catch {
+      return { weekday: 'Date', monthDay: dStr };
     }
   }
 });

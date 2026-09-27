@@ -3,10 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WasteWise — Collection Readiness & Dispatch</title>
+  <title>WasteWise — Municipal Collection Readiness & Dispatch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
+  <!-- Modern Navigation Header -->
   <header class="app-header">
     <div class="header-inner">
       <a href="/" class="brand">
@@ -28,46 +32,100 @@
     </div>
   </header>
 
-  <!-- Civic Hero Section with Operational Concept -->
+  <!-- Editorial Split Hero Section -->
   <section class="civic-hero">
     <div class="civic-hero-inner">
-      <div class="hero-pill">
-        <span class="hero-pill-dot" aria-hidden="true"></span>
-        Municipal Special Waste & Recycling Program
-      </div>
-      <h1 class="hero-heading">Get your waste collected — correctly, on schedule.</h1>
-      <p class="hero-lead">
-        Tell us what you have. We'll check preparation requirements and help you find an available collection window.
-      </p>
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="hero-badge-dot" aria-hidden="true"></span>
+          <span>Municipal Special Waste & Recycling Network</span>
+        </div>
+        <h1 class="hero-heading">
+          Get your waste collected.<br>
+          <span class="gradient-text">Correctly. On schedule.</span>
+        </h1>
+        <p class="hero-lead">
+          Prepare your waste, confirm collection readiness, and secure an available corridor pickup window in your municipal sector.
+        </p>
 
-      <!-- Operational Flow Strip -->
-      <div class="concept-flow-strip" aria-label="Operational Collection Process">
-        <div class="concept-step active-step">
-          <span class="concept-step-num">1</span>
-          <div>
-            <span class="concept-step-label">Waste Intake</span>
-            <span class="concept-step-sub">Select verified category</span>
+        <div class="hero-actions">
+          <a href="#booking-section" class="btn btn-primary hero-cta-btn">
+            Schedule a Collection
+          </a>
+          <a href="/track" class="btn btn-secondary hero-track-btn">
+            Track Existing Request
+          </a>
+        </div>
+
+        <div class="hero-trust-bar">
+          <div class="trust-item">
+            <span class="trust-icon" aria-hidden="true">✓</span>
+            <span>Zero Resident Login</span>
+          </div>
+          <div class="trust-item">
+            <span class="trust-icon" aria-hidden="true">✓</span>
+            <span>Upstream Hazard Prevention</span>
+          </div>
+          <div class="trust-item">
+            <span class="trust-icon" aria-hidden="true">✓</span>
+            <span>Corridor-Slotted Hauling</span>
           </div>
         </div>
-        <div class="concept-step">
-          <span class="concept-step-num">2</span>
-          <div>
-            <span class="concept-step-label">Readiness Verified</span>
-            <span class="concept-step-sub">Safety prep acknowledged</span>
+      </div>
+
+      <!-- Right Column: Visual Operational Pipeline -->
+      <div class="hero-visual" aria-hidden="true">
+        <div class="pipeline-card">
+          <div class="pipeline-header">
+            <div class="pipeline-title">
+              <span class="pipeline-dot"></span>
+              Operational Dispatch Flow
+            </div>
+            <span class="pipeline-badge">LIVE GATE</span>
           </div>
-        </div>
-        <div class="concept-step">
-          <span class="concept-step-num">3</span>
-          <div>
-            <span class="concept-step-label">Corridor Slotted</span>
-            <span class="concept-step-sub">Sector capacity matched</span>
-          </div>
-        </div>
-        <div class="concept-step">
-          <span class="concept-step-num">4</span>
-          <div>
-            <span class="concept-step-label">Curbside Retrieval</span>
-            <span class="concept-step-sub">Dispatched & collected</span>
+
+          <div class="pipeline-steps">
+            <!-- Step 1: Waste Material -->
+            <div class="pipeline-step">
+              <div class="step-marker marker-1">1</div>
+              <div class="step-body">
+                <div class="step-tag tag-orange">Waste Intake</div>
+                <div class="step-text">Verified category & physical quantity</div>
+              </div>
+            </div>
+
+            <div class="pipeline-line"></div>
+
+            <!-- Step 2: Readiness Gate -->
+            <div class="pipeline-step">
+              <div class="step-marker marker-2">2</div>
+              <div class="step-body">
+                <div class="step-tag tag-teal">Readiness Gate</div>
+                <div class="step-text">Mandatory safety prep acknowledged</div>
+              </div>
+            </div>
+
+            <div class="pipeline-line"></div>
+
+            <!-- Step 3: Slotted Corridor -->
+            <div class="pipeline-step">
+              <div class="step-marker marker-3">3</div>
+              <div class="step-body">
+                <div class="step-tag tag-blue">Corridor Slotted</div>
+                <div class="step-text">Zonal route schedule & vehicle payload</div>
+              </div>
+            </div>
+
+            <div class="pipeline-line"></div>
+
+            <!-- Step 4: Dispatched & Collected -->
+            <div class="pipeline-step">
+              <div class="step-marker marker-4">4</div>
+              <div class="step-body">
+                <div class="step-tag tag-green">Curbside Retrieval</div>
+                <div class="step-text">Crew dispatched & exception-free haul</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -78,40 +136,68 @@
     <div class="layout-grid">
       <!-- Left Column: The Guided Request Flow -->
       <div class="main-form-flow">
+        <!-- Step Progress Bar -->
+        <div class="steps-progress-bar" aria-label="Request Progress Steps">
+          <div class="prog-step active" id="prog-step-1">
+            <span class="prog-num">01</span>
+            <span class="prog-name">Category</span>
+          </div>
+          <div class="prog-divider"></div>
+          <div class="prog-step" id="prog-step-2">
+            <span class="prog-num">02</span>
+            <span class="prog-name">Item Details</span>
+          </div>
+          <div class="prog-divider"></div>
+          <div class="prog-step" id="prog-step-3">
+            <span class="prog-num">03</span>
+            <span class="prog-name">Preparation</span>
+          </div>
+          <div class="prog-divider"></div>
+          <div class="prog-step" id="prog-step-4">
+            <span class="prog-num">04</span>
+            <span class="prog-name">Location</span>
+          </div>
+          <div class="prog-divider"></div>
+          <div class="prog-step" id="prog-step-5">
+            <span class="prog-num">05</span>
+            <span class="prog-name">Corridor Slot</span>
+          </div>
+        </div>
+
         <div id="booking-section">
           <form id="pickup-form">
             <!-- Step 1: Category Selection -->
-            <div class="form-step-card">
+            <div class="form-step-card" id="form-step-card-1">
               <div class="step-header">
                 <span class="step-badge">01</span>
                 <div>
                   <h2 class="step-title">What are you disposing?</h2>
-                  <p class="step-subtitle">Select an eligible category to load specific handling rules.</p>
+                  <p class="step-subtitle">Select an eligible category to load specific handling and safety rules.</p>
                 </div>
               </div>
               <div id="category-container" class="category-grid">
-                <div style="color:var(--color-slate-500); font-size:0.9rem; padding:1rem;">Loading categories...</div>
+                <div style="color:var(--color-slate-500); font-size:0.9rem; padding:1.5rem; text-align:center;">Loading municipal categories...</div>
               </div>
               <input type="hidden" id="selected-category-id" required>
             </div>
 
             <!-- Step 2: Item Description & Quantity -->
-            <div class="form-step-card">
+            <div class="form-step-card" id="form-step-card-2">
               <div class="step-header">
                 <span class="step-badge">02</span>
                 <div>
-                  <h2 class="step-title">Tell us about it</h2>
-                  <p class="step-subtitle">Specify item details so the crew can prepare vehicle payload.</p>
+                  <h2 class="step-title">Describe your items</h2>
+                  <p class="step-subtitle">Specify item details so the crew can allocate truck payload space.</p>
                 </div>
               </div>
               <div class="item-details-grid">
                 <div class="form-group" style="margin-bottom:0;">
                   <label class="form-label" for="item-description">Item Description <span style="color:var(--color-danger)">*</span></label>
-                  <input type="text" id="item-description" class="form-control" placeholder="e.g. 2 Dell monitors, 1 UPS backup battery" minlength="3" maxlength="200" required>
+                  <input type="text" id="item-description" class="form-control" placeholder="e.g. 2 Dell desktop monitors, 1 UPS backup battery" minlength="3" maxlength="200" required>
                   <div class="form-hint">Brief, concrete description of physical items.</div>
                 </div>
                 <div class="form-group" style="margin-bottom:0;">
-                  <label class="form-label" for="item-quantity">Quantity</label>
+                  <label class="form-label" for="item-quantity">Quantity <span style="color:var(--color-danger)">*</span></label>
                   <input type="number" id="item-quantity" class="form-control" value="1" min="1" max="50" required>
                 </div>
               </div>
@@ -122,13 +208,13 @@
               <div class="step-header">
                 <span class="step-badge">03</span>
                 <div>
-                  <h2 class="step-title">Prepare it for collection</h2>
-                  <p class="step-subtitle">Mandatory safety preparation to prevent curbside rejection.</p>
+                  <h2 class="step-title">Safety Preparation Checklist</h2>
+                  <p class="step-subtitle">Mandatory preparation steps to prevent curbside rejection or handler hazard.</p>
                 </div>
               </div>
               
               <div class="callout callout-warning">
-                <strong>Readiness Gate:</strong> Non-compliant or unsafe items cannot be loaded by haulers. Confirm compliance to guarantee pickup.
+                <strong>Readiness Gate Requirement:</strong> Non-compliant items will be aborted by the crew. Confirm compliance before booking.
               </div>
 
               <div id="prep-rules-container" class="prep-checklist-box"></div>
@@ -142,7 +228,7 @@
             </div>
 
             <!-- Step 4: Address & Curbside Access Notes -->
-            <div class="form-step-card">
+            <div class="form-step-card" id="form-step-card-4">
               <div class="step-header">
                 <span class="step-badge">04</span>
                 <div>
@@ -164,12 +250,12 @@
             </div>
 
             <!-- Step 5: Zone & Collection Corridor -->
-            <div class="form-step-card">
+            <div class="form-step-card" id="form-step-card-5">
               <div class="step-header">
                 <span class="step-badge">05</span>
                 <div>
                   <h2 class="step-title">Choose a collection window</h2>
-                  <p class="step-subtitle">Select your municipal sector to view feasible collection dates.</p>
+                  <p class="step-subtitle">Select your municipal sector to view available corridor dates.</p>
                 </div>
               </div>
 
@@ -183,7 +269,7 @@
               <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label">Available Corridor Windows <span style="color:var(--color-danger)">*</span></label>
                 <div id="window-slot-container" class="window-slot-grid">
-                  <div style="color:var(--color-slate-500); font-size:0.875rem; grid-column:1/-1;">
+                  <div style="color:var(--color-slate-500); font-size:0.875rem; grid-column:1/-1; padding:1.25rem; text-align:center; background:var(--color-slate-50); border:1px dashed var(--color-slate-300); border-radius:var(--radius-sm);">
                     Please select a service zone above to view available scheduling windows.
                   </div>
                 </div>
@@ -191,7 +277,7 @@
                 <select id="window-select" style="display:none;" required>
                   <option value="">-- Select Window --</option>
                 </select>
-                <div id="capacity-indicator" class="form-hint" style="margin-top:0.5rem;"></div>
+                <div id="capacity-indicator" class="form-hint" style="margin-top:0.65rem;"></div>
               </div>
             </div>
 
@@ -199,7 +285,7 @@
 
             <!-- Form Action Button -->
             <div style="display:flex; justify-content:flex-end;">
-              <button type="submit" id="submit-btn" class="btn btn-primary" style="padding:0.75rem 1.85rem; font-size:1rem;">
+              <button type="submit" id="submit-btn" class="btn btn-primary" style="padding:0.9rem 2.25rem; font-size:1.05rem;">
                 Submit Collection Request
               </button>
             </div>
@@ -207,86 +293,133 @@
         </div>
 
         <!-- Confirmation Card (Shown After Successful Submission) -->
-        <div id="confirmation-section" class="form-step-card" style="display:none;">
-          <div class="callout callout-success" style="margin-bottom:1.5rem;">
-            <h2 style="font-size:1.25rem; font-weight:800; margin-bottom:0.25rem;">Collection Request Confirmed & Slotted</h2>
-            <p>Your request has verified collection-readiness status and is assigned to the sector dispatch queue.</p>
+        <div id="confirmation-section" class="form-step-card confirmation-card" style="display:none;">
+          <div class="confirmation-hero">
+            <div class="conf-badge-icon" aria-hidden="true">✓</div>
+            <div>
+              <h2 class="conf-title">Collection Request Confirmed & Slotted</h2>
+              <p class="conf-lead">Your request has verified collection-readiness status and is assigned to the sector dispatch run.</p>
+            </div>
           </div>
 
           <div class="confirmation-grid">
-            <div style="background-color:var(--color-slate-50); border:1px solid var(--color-slate-200); border-radius:var(--radius-md); padding:1.25rem;">
-              <div style="font-size:0.75rem; text-transform:uppercase; color:var(--color-slate-500); font-weight:800; letter-spacing:0.05em;">Private Tracking Reference</div>
-              <div id="confirm-tracking-code" style="font-size:1.65rem; font-weight:800; color:var(--color-brand); font-family:var(--font-mono); margin:0.35rem 0;"></div>
-              <p style="font-size:0.825rem; color:var(--color-slate-600); margin-bottom:0.85rem;">Save this code to check real-time collection status and driver notes.</p>
-              <div style="display:flex; gap:0.5rem;">
+            <div class="conf-code-box">
+              <div class="conf-box-label">Private Tracking Reference</div>
+              <div id="confirm-tracking-code" class="conf-code-display"></div>
+              <p class="conf-code-hint">Save this high-entropy code to track real-time route vehicle status and driver notes.</p>
+              <div class="conf-actions">
                 <button type="button" id="copy-code-btn" class="btn btn-secondary btn-sm">Copy Code</button>
-                <a id="track-link-btn" href="#" class="btn btn-primary btn-sm">Track Request</a>
+                <a id="track-link-btn" href="#" class="btn btn-primary btn-sm">Track Request Live →</a>
               </div>
             </div>
 
-            <div style="background-color:var(--color-slate-50); border:1px solid var(--color-slate-200); border-radius:var(--radius-md); padding:1.25rem;">
-              <div style="font-size:0.75rem; text-transform:uppercase; color:var(--color-slate-500); font-weight:800; letter-spacing:0.05em;">Confirmed Schedule</div>
-              <div id="confirm-window" style="font-size:1.15rem; font-weight:700; color:var(--color-slate-900); margin:0.35rem 0;"></div>
-              <div id="confirm-zone" style="font-size:0.85rem; color:var(--color-slate-600);"></div>
-              <div style="margin-top:0.75rem;">
-                <span id="confirm-status-badge" class="badge badge-READY">READY FOR DISPATCH</span>
+            <div class="conf-schedule-box">
+              <div class="conf-box-label">Confirmed Schedule</div>
+              <div id="confirm-window" class="conf-window-display"></div>
+              <div id="confirm-zone" class="conf-zone-display"></div>
+              <div class="conf-status-tag">
+                <span id="confirm-status-badge" class="badge badge-READY">✓ READY FOR DISPATCH</span>
               </div>
             </div>
           </div>
 
-          <div class="prep-checklist-box" style="margin-bottom:1.5rem;">
-            <h3 style="font-size:0.9rem; font-weight:700; margin-bottom:0.5rem; color:var(--color-slate-900);">
-              Curbside Preparation Reminder
-            </h3>
-            <ul id="confirm-prep-reminder" style="padding-left:1.25rem; font-size:0.85rem; color:var(--color-slate-700);"></ul>
+          <div class="prep-checklist-box">
+            <div class="prep-reminder-header">
+              <span class="reminder-icon" aria-hidden="true">📋</span>
+              <h3 style="font-size:0.95rem; font-weight:800; color:var(--color-slate-900);">
+                Curbside Preparation Reminder
+              </h3>
+            </div>
+            <ul id="confirm-prep-reminder" class="confirm-prep-list"></ul>
           </div>
 
-          <button type="button" id="new-request-btn" class="btn btn-secondary">Submit Another Request</button>
+          <div style="margin-top:1.5rem; text-align:center;">
+            <button type="button" id="new-request-btn" class="btn btn-secondary">Submit Another Request</button>
+          </div>
         </div>
       </div>
 
       <!-- Right Column: Collection Readiness Monitor (Visual Differentiator) -->
       <aside class="readiness-sidebar">
         <div class="readiness-widget">
-          <div class="readiness-widget-header">System Verification</div>
-          <h3 style="font-size:1.05rem; font-weight:800; color:var(--color-slate-900); margin-bottom:0.75rem;">
+          <div class="readiness-widget-header">
+            <span class="readiness-pulse-indicator" aria-hidden="true"></span>
+            <span>Operational Gate</span>
+          </div>
+          <h3 class="readiness-title">
             Collection Readiness Gate
           </h3>
 
-          <div id="readiness-status-banner" class="readiness-status-banner status-incomplete">
-            <span id="readiness-banner-icon" aria-hidden="true">&#9679;</span>
-            <span id="readiness-banner-text">Awaiting Requirements</span>
+          <!-- Circular Dial Card -->
+          <div class="readiness-dial-card">
+            <div class="readiness-progress-ring-box" aria-hidden="true">
+              <svg class="progress-ring-svg" viewBox="0 0 80 80">
+                <circle class="ring-bg" cx="40" cy="40" r="34" />
+                <circle id="readiness-ring-circle" class="ring-fill" cx="40" cy="40" r="34" stroke-dasharray="213.6" stroke-dashoffset="213.6" />
+              </svg>
+              <div class="ring-center-content">
+                <span id="readiness-count-text" class="ring-count">0/5</span>
+                <span class="ring-label">READY</span>
+              </div>
+            </div>
+
+            <div class="readiness-dial-info">
+              <div id="readiness-status-banner" class="readiness-status-banner status-incomplete">
+                <span id="readiness-banner-text">Awaiting Requirements</span>
+              </div>
+              <div class="readiness-summary-line" id="readiness-summary-line">
+                5 required verifications pending
+              </div>
+            </div>
           </div>
 
-          <p style="font-size:0.8rem; color:var(--color-slate-600); line-height:1.45; margin-bottom:1rem;">
+          <p class="readiness-lead-text">
             WasteWise enforces operational readiness upstream to prevent wasted fleet trips and non-compliant curbside rejections.
           </p>
 
           <ul class="checklist-gauge" aria-label="Readiness Verification Steps">
             <li id="gauge-category" class="gauge-item unverified">
-              <span class="gauge-icon">&#10003;</span>
-              <span>Valid Category Selected</span>
+              <span class="gauge-icon" aria-hidden="true">&#10003;</span>
+              <div class="gauge-text">
+                <span class="gauge-name">Valid Category</span>
+                <span class="gauge-sub">Classification declared</span>
+              </div>
             </li>
             <li id="gauge-item" class="gauge-item unverified">
-              <span class="gauge-icon">&#10003;</span>
-              <span>Item & Quantity Specified</span>
+              <span class="gauge-icon" aria-hidden="true">&#10003;</span>
+              <div class="gauge-text">
+                <span class="gauge-name">Item Description</span>
+                <span class="gauge-sub">Payload volume specified</span>
+              </div>
             </li>
             <li id="gauge-prep" class="gauge-item unverified">
-              <span class="gauge-icon">&#10003;</span>
-              <span>Safety Preparation Certified</span>
+              <span class="gauge-icon" aria-hidden="true">&#10003;</span>
+              <div class="gauge-text">
+                <span class="gauge-name">Safety Preparation</span>
+                <span class="gauge-sub">Checklist confirmed</span>
+              </div>
             </li>
             <li id="gauge-address" class="gauge-item unverified">
-              <span class="gauge-icon">&#10003;</span>
-              <span>Curbside Address & Access</span>
+              <span class="gauge-icon" aria-hidden="true">&#10003;</span>
+              <div class="gauge-text">
+                <span class="gauge-name">Curbside Access</span>
+                <span class="gauge-sub">Location & driver notes</span>
+              </div>
             </li>
             <li id="gauge-window" class="gauge-item unverified">
-              <span class="gauge-icon">&#10003;</span>
-              <span>Corridor Slot & Capacity Locked</span>
+              <span class="gauge-icon" aria-hidden="true">&#10003;</span>
+              <div class="gauge-text">
+                <span class="gauge-name">Corridor Capacity</span>
+                <span class="gauge-sub">Zonal run slot locked</span>
+              </div>
             </li>
           </ul>
 
-          <div style="background-color:var(--color-slate-50); border:1px solid var(--color-slate-200); border-radius:var(--radius-sm); padding:0.75rem; font-size:0.75rem; color:var(--color-slate-600); line-height:1.4;">
-            <strong>Zero Resident Login:</strong> A high-entropy tracking code is issued immediately upon submission.
+          <div class="readiness-footer-card">
+            <div class="footer-card-icon" aria-hidden="true">⚡</div>
+            <div class="footer-card-text">
+              <strong>High-Entropy Tracking:</strong> Real-time dispatch telemetry reference issued immediately on submission.
+            </div>
           </div>
         </div>
       </aside>
@@ -294,7 +427,7 @@
   </main>
 
   <footer class="app-footer">
-    <div style="max-width:1140px; margin:0 auto;">
+    <div style="max-width:1200px; margin:0 auto;">
       WasteWise Municipal Readiness & Dispatch Platform &bull; Zero-Friction Municipal Logistics
     </div>
   </footer>
