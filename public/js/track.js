@@ -19,6 +19,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const exceptionReasonBadge = document.getElementById('exception-reason-badge');
   const exceptionResolutionText = document.getElementById('exception-resolution-text');
 
+  // Timeline Step Elements
+  const step1 = document.getElementById('timeline-step-1');
+  const step2 = document.getElementById('timeline-step-2');
+  const step3 = document.getElementById('timeline-step-3');
+  const step4 = document.getElementById('timeline-step-4');
+
+  // Sample code quick-click handlers
+  document.querySelectorAll('.test-code-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const code = link.dataset.code;
+      trackingInput.value = code;
+      performLookup(code);
+    });
+  });
+
   // Check URL query params for ?code=...
   const urlParams = new URLSearchParams(window.location.search);
   const codeParam = urlParams.get('code');
@@ -46,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .then(async (res) => {
         const data = await res.json();
         if (!res.ok) {
-          throw new Error(data.message || data.error || 'Tracking lookup failed');
+          throw new Error(data.message || data.error || 'Tracking reference not found');
         }
         return data;
       })
@@ -55,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         resTrackingCode.textContent = data.tracking_code;
         resCreatedDate.textContent = `Submitted: ${new Date(data.created_at).toLocaleString()}`;
-        
+
         // Status Badge
         resStatusBadge.className = `badge badge-${data.status}`;
         resStatusBadge.textContent = getStatusLabel(data.status);
@@ -73,6 +89,9 @@ document.addEventListener('DOMContentLoaded', () => {
           li.textContent = rule;
           resPrepRules.appendChild(li);
         });
+
+        // Update Timeline Progression
+        updateTimeline(data.status);
 
         // Exception Handling if UNSUCCESSFUL
         if (data.status === 'UNSUCCESSFUL' && data.exception) {
@@ -95,13 +114,40 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   }
 
+  function updateTimeline(status) {
+    // Reset all steps
+    [step1, step2, step3, step4].forEach(s => {
+      s.className = 'timeline-step';
+    });
+
+    if (status === 'SUBMITTED') {
+      step1.className = 'timeline-step active';
+    } else if (status === 'READY') {
+      step1.className = 'timeline-step completed';
+      step2.className = 'timeline-step active';
+    } else if (status === 'SCHEDULED') {
+      step1.className = 'timeline-step completed';
+      step2.className = 'timeline-step completed';
+      step3.className = 'timeline-step active';
+    } else if (status === 'COLLECTED') {
+      step1.className = 'timeline-step completed';
+      step2.className = 'timeline-step completed';
+      step3.className = 'timeline-step completed';
+      step4.className = 'timeline-step completed';
+    } else if (status === 'UNSUCCESSFUL') {
+      step1.className = 'timeline-step completed';
+      step2.className = 'timeline-step completed';
+      step3.className = 'timeline-step failed';
+    }
+  }
+
   function getStatusLabel(status) {
     switch (status) {
-      case 'SUBMITTED': return 'Submitted - Intake Review';
+      case 'SUBMITTED': return 'Intake Review';
       case 'READY': return 'Ready for Dispatch';
       case 'SCHEDULED': return 'Scheduled on Run Sheet';
       case 'COLLECTED': return 'Completed & Collected';
-      case 'UNSUCCESSFUL': return 'Unsuccessful Stop';
+      case 'UNSUCCESSFUL': return 'Curbside Exception';
       default: return status;
     }
   }

@@ -12,6 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const statCollected = document.getElementById('stat-collected');
   const statUnsuccessful = document.getElementById('stat-unsuccessful');
 
+  const distributionPanel = document.getElementById('distribution-panel');
+  const categoryBarsContainer = document.getElementById('category-bars-container');
+  const zoneBarsContainer = document.getElementById('zone-bars-container');
+
   const filterStatus = document.getElementById('filter-status');
   const filterZone = document.getElementById('filter-zone');
   const filterCategory = document.getElementById('filter-category');
@@ -58,11 +62,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function updateAuthUI(isAuthed) {
     if (isAuthed) {
-      authStatusIndicator.textContent = 'Authenticated (Key Loaded)';
+      authStatusIndicator.textContent = 'Authenticated (Active Session)';
       authStatusIndicator.style.color = 'var(--color-success)';
     } else {
       authStatusIndicator.textContent = 'Status: Not Authenticated';
-      authStatusIndicator.style.color = 'var(--color-text-muted)';
+      authStatusIndicator.style.color = 'var(--color-slate-500)';
     }
   }
 
@@ -102,15 +106,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!adminKey) {
       requestsTbody.innerHTML = `
         <tr>
-          <td colspan="7" style="text-align:center; padding:2rem; color:var(--color-text-muted);">
+          <td colspan="7" style="text-align:center; padding:2.5rem; color:var(--color-slate-500);">
             Please enter your ADMIN_KEY in the header to view and manage dispatch requests.
           </td>
         </tr>
       `;
+      distributionPanel.style.display = 'none';
       return;
     }
 
-    // Load Stats
+    // Load Stats and Render Real Data Visualizations
     fetch('/api/admin/stats', {
       headers: { 'x-admin-key': adminKey }
     })
@@ -124,6 +129,9 @@ document.addEventListener('DOMContentLoaded', () => {
         statScheduled.textContent = stats.scheduled;
         statCollected.textContent = stats.collected;
         statUnsuccessful.textContent = stats.unsuccessful;
+
+        // Render Data Visualizations from real DB counts
+        renderDataVisuals(stats);
       })
       .catch(err => {
         showError(err.message);
@@ -150,12 +158,59 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   }
 
+  function renderDataVisuals(stats) {
+    if (!stats || stats.total_all === 0) {
+      distributionPanel.style.display = 'none';
+      return;
+    }
+
+    distributionPanel.style.display = 'grid';
+
+    // 1. Category Bar Distribution
+    categoryBarsContainer.innerHTML = '';
+    const totalRequests = Math.max(1, stats.total_all);
+
+    (stats.by_category || []).forEach(cat => {
+      const count = Number(cat.request_count || 0);
+      const pct = Math.round((count / totalRequests) * 100);
+
+      const row = document.createElement('div');
+      row.className = 'bar-row';
+      row.innerHTML = `
+        <span class="bar-label" title="${escapeHtml(cat.name)}">${escapeHtml(cat.name)}</span>
+        <div class="bar-track">
+          <div class="bar-fill" style="width: ${pct}%;"></div>
+        </div>
+        <span class="bar-count">${count}</span>
+      `;
+      categoryBarsContainer.appendChild(row);
+    });
+
+    // 2. Zone Bar Distribution
+    zoneBarsContainer.innerHTML = '';
+    (stats.by_zone || []).forEach(zone => {
+      const count = Number(zone.request_count || 0);
+      const pct = Math.round((count / totalRequests) * 100);
+
+      const row = document.createElement('div');
+      row.className = 'bar-row';
+      row.innerHTML = `
+        <span class="bar-label" title="${escapeHtml(zone.name)}">${escapeHtml(zone.name)}</span>
+        <div class="bar-track">
+          <div class="bar-fill" style="width: ${pct}%; background-color: var(--color-logistics);"></div>
+        </div>
+        <span class="bar-count">${count}</span>
+      `;
+      zoneBarsContainer.appendChild(row);
+    });
+  }
+
   function renderRequestsTable(requests) {
     requestsTbody.innerHTML = '';
     if (!requests || requests.length === 0) {
       requestsTbody.innerHTML = `
         <tr>
-          <td colspan="7" style="text-align:center; padding:2rem; color:var(--color-text-muted);">
+          <td colspan="7" style="text-align:center; padding:2.5rem; color:var(--color-slate-500);">
             No pickup requests match the current filters.
           </td>
         </tr>
@@ -168,8 +223,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Prep state indicator
       const prepBadge = req.prep_confirmed
-        ? `<span class="badge" style="background-color:#dcfce7; color:#166534;">Verified Ready</span>`
-        : `<span class="badge" style="background-color:#fee2e2; color:#991b1b;">Unverified</span>`;
+        ? `<span class="badge" style="background-color:var(--color-success-subtle); color:var(--color-success-dark); border:1px solid var(--color-success-border);">&#10003; Certified Ready</span>`
+        : `<span class="badge" style="background-color:var(--color-danger-subtle); color:var(--color-danger-dark); border:1px solid var(--color-danger-border);">Unverified</span>`;
 
       // Status badge
       const statusBadge = `<span class="badge badge-${req.status}">${req.status}</span>`;
@@ -182,27 +237,27 @@ document.addEventListener('DOMContentLoaded', () => {
         actionButtons = `<button class="btn btn-primary btn-sm" onclick="window.updateStatus('${req.id}', 'SCHEDULED')">Schedule Run</button>`;
       } else if (req.status === 'SCHEDULED') {
         actionButtons = `
-          <div style="display:flex; gap:0.35rem; justify-content:flex-end;">
+          <div style="display:flex; gap:0.4rem; justify-content:flex-end;">
             <button class="btn btn-primary btn-sm" style="background-color:var(--color-success);" onclick="window.updateStatus('${req.id}', 'COLLECTED')">Collected</button>
             <button class="btn btn-danger btn-sm" onclick="window.openExceptionModal('${req.id}')">Unsuccessful</button>
           </div>
         `;
       } else if (req.status === 'UNSUCCESSFUL') {
         actionButtons = `
-          <div style="display:flex; gap:0.35rem; justify-content:flex-end;">
+          <div style="display:flex; gap:0.4rem; justify-content:flex-end;">
             <button class="btn btn-secondary btn-sm" onclick="window.updateStatus('${req.id}', 'READY')">Re-Open</button>
             <button class="btn btn-primary btn-sm" onclick="window.updateStatus('${req.id}', 'SCHEDULED')">Re-Schedule</button>
           </div>
         `;
       } else if (req.status === 'COLLECTED') {
-        actionButtons = `<span style="font-size:0.8rem; color:var(--color-text-muted); font-weight:600;">Dispatched & Closed</span>`;
+        actionButtons = `<span style="font-size:0.75rem; color:var(--color-slate-500); font-weight:700; text-transform:uppercase;">Closed &amp; Weighed</span>`;
       }
 
       // Exception display if any
       let exceptionInfo = '';
       if (req.status === 'UNSUCCESSFUL' && req.exception_reason) {
         exceptionInfo = `
-          <div style="margin-top:0.4rem; padding:0.4rem; background:#fee2e2; border-radius:3px; font-size:0.75rem; color:#991b1b;">
+          <div style="margin-top:0.45rem; padding:0.45rem 0.65rem; background:var(--color-danger-subtle); border:1px solid var(--color-danger-border); border-radius:var(--radius-xs); font-size:0.75rem; color:var(--color-danger-dark); line-height:1.35;">
             <strong>Exception:</strong> ${escapeHtml(req.exception_reason)}<br>
             <em>${escapeHtml(req.exception_operator_note || '')}</em>
           </div>
@@ -210,22 +265,23 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       tr.innerHTML = `
-        <td style="font-family:monospace; font-weight:700;">
-          <a href="/track?code=${encodeURIComponent(req.tracking_code)}" target="_blank" style="color:var(--color-brand); text-decoration:none;">
+        <td style="font-family:var(--font-mono); font-weight:700;">
+          <a href="/track?code=${encodeURIComponent(req.tracking_code)}" target="_blank" style="color:var(--color-brand); text-decoration:none; display:inline-flex; align-items:center; gap:0.25rem;">
             ${escapeHtml(req.tracking_code)}
+            <span style="font-size:0.75rem;">&#8599;</span>
           </a>
         </td>
         <td>
-          <div style="font-weight:600;">${escapeHtml(req.category_name)}</div>
-          <div style="font-size:0.8rem; color:var(--color-text-secondary);">${escapeHtml(req.item_description)} (Qty: ${req.quantity})</div>
+          <div style="font-weight:700; color:var(--color-slate-900); font-size:0.925rem;">${escapeHtml(req.category_name)}</div>
+          <div style="font-size:0.8rem; color:var(--color-slate-600); margin-top:0.15rem;">${escapeHtml(req.item_description)} (Qty: ${req.quantity})</div>
         </td>
         <td>
-          <div style="font-weight:600;">${escapeHtml(req.zone_name)}</div>
-          <div style="font-size:0.8rem; color:var(--color-text-secondary);">${formatDate(req.collection_date)} (${req.window_start} - ${req.window_end})</div>
+          <div style="font-weight:700; color:var(--color-slate-900);">${escapeHtml(req.zone_name)}</div>
+          <div style="font-size:0.8rem; color:var(--color-slate-600); margin-top:0.15rem;">${formatDate(req.collection_date)} (${req.window_start} – ${req.window_end})</div>
         </td>
         <td>
-          <div>${escapeHtml(req.address)}</div>
-          ${req.access_notes ? `<div style="font-size:0.775rem; color:var(--color-text-muted); margin-top:0.2rem;">Note: ${escapeHtml(req.access_notes)}</div>` : ''}
+          <div style="font-weight:600; color:var(--color-slate-900);">${escapeHtml(req.address)}</div>
+          ${req.access_notes ? `<div style="font-size:0.775rem; color:var(--color-slate-500); margin-top:0.25rem;">Access: <em>${escapeHtml(req.access_notes)}</em></div>` : ''}
         </td>
         <td>${prepBadge}</td>
         <td>
@@ -239,7 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Global window functions for table action buttons
+  // Global action handlers
   window.updateStatus = function(id, targetStatus) {
     if (!confirm(`Confirm transitioning request status to '${targetStatus}'?`)) return;
 
@@ -272,7 +328,6 @@ document.addEventListener('DOMContentLoaded', () => {
     exceptionModal.style.display = 'flex';
   };
 
-  // Preview resolution text when selecting reason
   reasonCodeSelect.addEventListener('change', () => {
     const reason = reasonCodeSelect.value;
     if (reason && RESOLUTION_PREVIEWS[reason]) {
@@ -283,14 +338,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Modal Cancel / Close
   modalCloseBtn.addEventListener('click', closeModal);
   modalCancelBtn.addEventListener('click', closeModal);
   function closeModal() {
     exceptionModal.style.display = 'none';
   }
 
-  // Submit Exception
   exceptionForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const id = modalRequestId.value;
@@ -327,7 +380,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   });
 
-  // Filter events
   filterStatus.addEventListener('change', loadDashboard);
   filterZone.addEventListener('change', loadDashboard);
   filterCategory.addEventListener('change', loadDashboard);

@@ -3,20 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Operator Console - WasteWise</title>
+  <title>Operator Console — WasteWise</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
   <header class="app-header">
     <div class="header-inner">
       <a href="/" class="brand">
-        <span class="brand-icon">WW</span>
+        <div class="brand-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14V4zM6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zm3-9h2v8H9v-8zm4 0h2v8h-2v-8z"/>
+          </svg>
+        </div>
         <div>
           <span class="brand-title">WasteWise</span>
           <span class="brand-subtitle">Municipal Operations & Dispatch Console</span>
         </div>
       </a>
-      <nav class="nav-links">
+      <nav class="nav-links" aria-label="Main Navigation">
         <a href="/" class="nav-link">Schedule Pickup</a>
         <a href="/track" class="nav-link">Track Request</a>
         <a href="/admin" class="nav-link active">Operator Console</a>
@@ -24,15 +28,15 @@
     </div>
   </header>
 
-  <main class="container" style="max-width:1200px;">
+  <main class="container" style="max-width:1200px; margin-top:2rem;">
     <!-- Authentication Header Bar -->
-    <div class="card" style="padding:1rem; margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
-      <div style="display:flex; align-items:center; gap:0.5rem;">
-        <span style="font-weight:700; font-size:0.9rem;">Operator Access:</span>
-        <input type="password" id="admin-key-input" class="form-control" placeholder="Enter ADMIN_KEY" style="width:220px; padding:0.4rem 0.6rem; font-size:0.875rem;">
+    <div class="card" style="padding:0.85rem 1.25rem; margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+      <div style="display:flex; align-items:center; flex-wrap:wrap; gap:0.6rem;">
+        <span style="font-weight:700; font-size:0.875rem; color:var(--color-slate-800);">Dispatcher Key:</span>
+        <input type="password" id="admin-key-input" class="form-control" placeholder="Enter ADMIN_KEY" style="width:230px; padding:0.45rem 0.75rem; font-size:0.875rem;" autocomplete="current-password">
         <button type="button" id="save-key-btn" class="btn btn-primary btn-sm">Authenticate</button>
       </div>
-      <div id="auth-status-indicator" style="font-size:0.85rem; font-weight:600; color:var(--color-text-muted);">
+      <div id="auth-status-indicator" style="font-size:0.85rem; font-weight:700; color:var(--color-slate-500);">
         Status: Not Authenticated
       </div>
     </div>
@@ -59,14 +63,29 @@
       </div>
       <div class="stat-card">
         <div id="stat-unsuccessful" class="stat-value" style="color:var(--color-danger);">-</div>
-        <div class="stat-label">Unsuccessful</div>
+        <div class="stat-label">Curbside Exceptions</div>
       </div>
     </div>
 
-    <!-- Filters Bar -->
+    <!-- Operational Data Visualizations (Pure CSS/Data-driven from DB state) -->
+    <div id="distribution-panel" class="distribution-panel" style="display:none;">
+      <!-- Category Volume Distribution -->
+      <div class="metric-chart-card">
+        <div class="metric-chart-title">Requests by Waste Category</div>
+        <div id="category-bars-container"></div>
+      </div>
+
+      <!-- Sector Corridor Distribution -->
+      <div class="metric-chart-card">
+        <div class="metric-chart-title">Sector Corridor Load Distribution</div>
+        <div id="zone-bars-container"></div>
+      </div>
+    </div>
+
+    <!-- Operational Queue Filters -->
     <div class="filters-bar">
-      <span style="font-weight:700; font-size:0.85rem; color:var(--color-text-secondary); text-transform:uppercase;">Filter By:</span>
-      <select id="filter-status" class="form-control" style="width:170px; padding:0.4rem 0.6rem; font-size:0.85rem;">
+      <span style="font-weight:700; font-size:0.8rem; color:var(--color-slate-600); text-transform:uppercase; letter-spacing:0.04em;">Filter:</span>
+      <select id="filter-status" class="form-control" style="width:170px; padding:0.45rem 0.65rem; font-size:0.85rem;">
         <option value="">All Statuses</option>
         <option value="SUBMITTED">SUBMITTED</option>
         <option value="READY">READY</option>
@@ -75,11 +94,11 @@
         <option value="UNSUCCESSFUL">UNSUCCESSFUL</option>
       </select>
 
-      <select id="filter-zone" class="form-control" style="width:200px; padding:0.4rem 0.6rem; font-size:0.85rem;">
+      <select id="filter-zone" class="form-control" style="width:200px; padding:0.45rem 0.65rem; font-size:0.85rem;">
         <option value="">All Service Zones</option>
       </select>
 
-      <select id="filter-category" class="form-control" style="width:200px; padding:0.4rem 0.6rem; font-size:0.85rem;">
+      <select id="filter-category" class="form-control" style="width:200px; padding:0.45rem 0.65rem; font-size:0.85rem;">
         <option value="">All Waste Categories</option>
       </select>
 
@@ -91,12 +110,12 @@
     <!-- Requests Dispatch Table -->
     <div class="card" style="padding:0; overflow:hidden;">
       <div class="table-responsive">
-        <table class="data-table">
+        <table class="data-table" aria-label="Requests Dispatch Queue">
           <thead>
             <tr>
-              <th>Tracking Code</th>
+              <th>Tracking Reference</th>
               <th>Category & Description</th>
-              <th>Zone & Window</th>
+              <th>Sector & Window</th>
               <th>Curbside Address & Access Notes</th>
               <th>Readiness State</th>
               <th>Status</th>
@@ -105,8 +124,8 @@
           </thead>
           <tbody id="requests-tbody">
             <tr>
-              <td colspan="7" style="text-align:center; padding:2rem; color:var(--color-text-muted);">
-                Authenticate with x-admin-key to load the operational dispatch queue.
+              <td colspan="7" style="text-align:center; padding:2.5rem; color:var(--color-slate-500);">
+                Please authenticate with your ADMIN_KEY in the header to load the operational dispatch queue.
               </td>
             </tr>
           </tbody>
@@ -115,16 +134,16 @@
     </div>
   </main>
 
-  <!-- Unsuccessful Stop / Exception Modal -->
-  <div id="exception-modal" class="modal-overlay" style="display:none;">
+  <!-- Curbside Exception / Abort Stop Modal -->
+  <div id="exception-modal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="modal-title">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 class="modal-title">Record Curbside Exception</h3>
-        <button type="button" id="modal-close-btn" class="modal-close">&times;</button>
+        <h3 id="modal-title" class="modal-title">Record Curbside Exception</h3>
+        <button type="button" id="modal-close-btn" class="modal-close" aria-label="Close modal">&times;</button>
       </div>
 
-      <div style="font-size:0.875rem; color:var(--color-text-secondary); margin-bottom:1rem;">
-        Log why this collection could not proceed. The resident tracking portal will immediately receive the corresponding remediation instructions.
+      <div style="font-size:0.875rem; color:var(--color-slate-600); margin-bottom:1rem; line-height:1.45;">
+        Specify why this stop could not be completed. The resident tracking portal will immediately receive the corresponding remediation instructions.
       </div>
 
       <form id="exception-form">
@@ -144,17 +163,17 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="operator-note-input">Driver / Dispatcher Internal Notes</label>
-          <textarea id="operator-note-input" class="form-control" placeholder="Specific notes on obstacle, vehicle obstruction, or safety issue..." maxlength="500"></textarea>
+          <label class="form-label" for="operator-note-input">Dispatcher / Crew Notes (Internal)</label>
+          <textarea id="operator-note-input" class="form-control" placeholder="Specific notes on obstacle, obstruction, or hazard..." maxlength="500"></textarea>
         </div>
 
         <!-- Live Resolution Preview Box -->
-        <div id="resolution-preview-box" class="callout callout-info" style="display:none; font-size:0.85rem;">
-          <strong>Resident Resolution Message:</strong>
-          <div id="resolution-preview-text" style="margin-top:0.25rem;"></div>
+        <div id="resolution-preview-box" class="callout callout-info" style="display:none; font-size:0.85rem; margin-bottom:1.25rem;">
+          <strong style="text-transform:uppercase; font-size:0.75rem; letter-spacing:0.04em;">Resident Resolution Message:</strong>
+          <div id="resolution-preview-text" style="margin-top:0.35rem; line-height:1.4;"></div>
         </div>
 
-        <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:1.5rem;">
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
           <button type="button" id="modal-cancel-btn" class="btn btn-secondary">Cancel</button>
           <button type="submit" id="modal-submit-btn" class="btn btn-danger">Confirm Exception & Abort Stop</button>
         </div>
@@ -163,7 +182,7 @@
   </div>
 
   <footer class="app-footer">
-    <div style="max-width:1100px; margin:0 auto;">
+    <div style="max-width:1140px; margin:0 auto;">
       WasteWise Municipal Readiness & Dispatch Platform &bull; Zero-Friction Municipal Logistics
     </div>
   </footer>
